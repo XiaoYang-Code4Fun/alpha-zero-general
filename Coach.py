@@ -24,6 +24,7 @@ class Coach():
         self.skipFirstSelfPlay = False # can be overriden in loadTrainExamples()
         self.pool = ThreadPool(processes=4)
         self.evalResults = []
+        self.loadEvalResults()
 
     def executeEpisode(self, mcts):
         """
@@ -79,7 +80,7 @@ class Coach():
 
         arena = Arena(mplay, rplay, self.game)
         mwins, rwins, draws = arena.playGames(20)
-        self.evalResults.append((wins/20.0, iter))
+        self.evalResults.append((mwins/20.0, iter))
         print('Saving eval results:')
         print(self.evalResults)
         self.saveEvalResults()
@@ -167,6 +168,13 @@ class Coach():
         with open(filename, "wb+") as f:
             Pickler(f).dump(self.evalResults)
         f.closed
+    
+    def loadEvalResults(self):
+        filename = os.path.join(self.args.checkpoint, "eval.results")
+        if os.path.isfile(filename):
+            with open(filename, "rb") as f:
+                self.evalResults = Unpickler(f).load()
+            f.closed
 
     def saveTrainExamples(self, iteration):
         folder = self.args.checkpoint
